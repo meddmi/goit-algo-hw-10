@@ -71,3 +71,69 @@ Dynamic programming is more general: it remains useful when the set of denominat
 ## Conclusion
 
 For the fixed coin set used in this assignment, the greedy algorithm is preferable because it is faster, uses less memory, and still guarantees the minimum number of coins. Dynamic programming is the safer general-purpose solution when coin denominations are arbitrary or when optimality cannot be guaranteed by a greedy strategy.
+
+## Task 2 — Monte Carlo integration
+
+The second task uses the function `f(x) = exp(-x²)` on the interval `[-1, 1]`. The gray area in the plot represents the definite integral:
+
+```text
+∫₋₁¹ exp(-x²) dx
+```
+
+The implementation is located in [`task02.py`](task02.py).
+
+### Monte Carlo method
+
+The function `monte_carlo_simulation` uses the hit-or-miss Monte Carlo method. For each experiment, it generates random points inside the rectangle:
+
+```text
+x ∈ [-1, 1], y ∈ [0, 1]
+```
+
+A point is considered inside the area when:
+
+```text
+y ≤ exp(-x²)
+```
+
+The area is estimated from the ratio of points below the curve:
+
+```text
+area ≈ rectangle_area × points_below_curve / total_points
+```
+
+The program runs 10 experiments. Each experiment uses 100,000 random points, and the final Monte Carlo result is the average of the 10 area estimates. A fixed random seed (`42`) makes the result reproducible.
+
+### Reference calculation with SciPy
+
+The integral of `exp(-x²)` does not have an elementary antiderivative, so the result is verified with SciPy's adaptive numerical integration function `scipy.integrate.quad`:
+
+```python
+import scipy.integrate as spi
+
+result, error = spi.quad(integration_function, -1, 1)
+```
+
+The `quad_integral` function in `task02.py` returns both the integral estimate and SciPy's estimated absolute error. The program compares the Monte Carlo estimate with the `quad` result and prints their absolute difference.
+
+Run the program with:
+
+```bash
+python3 task02.py
+```
+
+Example output:
+
+```text
+Function: exp(-x**2), interval: [-1, 1]
+Monte Carlo estimate: 1.4945740000
+SciPy quad result: 1.4936482656
+SciPy quad estimated error: 1.6582826952e-14
+Absolute difference: 0.0009257344
+```
+
+### Conclusion
+
+The Monte Carlo estimate is close to the value returned by `quad`, approximately `1.4936482656`. In the example, the absolute difference is about `0.0009257344`. This difference is caused by random sampling. Increasing the number of samples or experiments generally improves the accuracy, although convergence is relatively slow: the typical error decreases approximately as `1 / √N`, where `N` is the number of random points.
+
+Therefore, the method is suitable for estimating integrals when an analytical solution is difficult or impossible to obtain. For this one-dimensional function, `quad` is more accurate and faster, while Monte Carlo integration is more flexible and can be extended to multidimensional problems.
